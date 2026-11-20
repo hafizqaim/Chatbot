@@ -1,0 +1,8 @@
+services:
+  chatbot:
+    build: .
+    ports:
+      - "8000:10000"
+    env_file: .env
+    mem_limit: 512m
+    restart: unless-stopped

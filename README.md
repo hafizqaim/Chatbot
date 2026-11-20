@@ -4,7 +4,7 @@ A RAG chatbot that answers questions about **DarGlobal** projects and **Wasalt**
 built from publicly available data on [darglobal.co.uk](https://darglobal.co.uk) and [wasalt.sa](https://wasalt.sa).
 It uses free models on OpenRouter, runs as a single Docker container, and is deployed on Render.
 
-**Live demo:** `<RENDER_URL>`  ·  Built by Muhammad Qaim Ali for the Junior AI Engineer (Applied AI) assessment.
+**Live demo:** [darglobal-chatbot-nwix.onrender.com](https://darglobal-chatbot-nwix.onrender.com/)  ·  Built by Muhammad Qaim Ali for the Junior AI Engineer (Applied AI) assessment.
 
 > The free Render instance sleeps after 15 minutes idle. If the first load takes ~1 minute, it is waking up.
 
@@ -98,6 +98,20 @@ docker run --rm -p 8000:10000 -m 512m -e OPENROUTER_API_KEY=$OPENROUTER_API_KEY 
 ```
 
 Open http://localhost:8000. Without an API key the app runs in retrieval-only mode.
+
+### Docker
+
+```bash
+docker build -t darglobal-chatbot .
+docker run --rm -p 8000:10000 -m 512m -e OPENROUTER_API_KEY=$OPENROUTER_API_KEY darglobal-chatbot
+# or, with a .env file:
+docker compose up --build
+```
+
+Verified: image is ~805 MB, starts offline (`--network none`, the fastembed model is baked in at build
+time), peak memory stays ~300 MB of the 512 MB cap under a real chat request, and `/health` reports
+`healthy` via the built-in `HEALTHCHECK`. Without `OPENROUTER_API_KEY` it still starts and answers in
+retrieval-only mode.
 
 ### 3. Deploy (Render, free)
 
