@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Property Assistant · DarGlobal &amp; Wasalt data</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
+<style>
+  :root { --bg:#f6f5f2; --card:#fff; --ink:#1c1b19; --muted:#6b6860; --line:#e4e1da; --accent:#8a6d3b;
+          --accent-soft:#f3ede2; --user:#1c1b19; --radius:14px; }
+  * { box-sizing:border-box; }
+  html,body { margin:0; height:100%; background:var(--bg); color:var(--ink);
+    font:15px/1.6 Inter, system-ui, sans-serif; }
+  .app { max-width:860px; margin:0 auto; height:100%; display:flex; flex-direction:column; padding:0 16px; }
+  header { padding:22px 0 14px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; gap:12px; align-items:flex-end; flex-wrap:wrap; }
+  header h1 { font-size:19px; font-weight:600; margin:0; letter-spacing:-.01em; }
+  header p { margin:2px 0 0; color:var(--muted); font-size:13px; }
+  .status { font-size:12px; color:var(--muted); display:flex; gap:6px; align-items:center; }
+  .dot { width:8px; height:8px; border-radius:50%; background:#bbb; }
+  .dot.ok { background:#3a9a5b; } .dot.warn { background:#d39b2a; }
+  #log { flex:1; overflow-y:auto; padding:20px 0; display:flex; flex-direction:column; gap:18px; }
+  .msg { max-width:100%; }
+  .msg.user { align-self:flex-end; background:var(--user); color:#fff; padding:10px 14px; border-radius:var(--radius) var(--radius) 4px var(--radius); max-width:80%; white-space:pre-wrap; }
+  .msg.bot { background:var(--card); border:1px solid var(--line); border-radius:4px var(--radius) var(--radius) var(--radius); padding:14px 16px; }
+  .msg.bot .body > :first-child { margin-top:0 } .msg.bot .body > :last-child { margin-bottom:0 }
+  .msg.bot table { border-collapse:collapse; font-size:13.5px; margin:8px 0; width:100%; }
+  .msg.bot th, .msg.bot td { border-bottom:1px solid var(--line); padding:6px 8px; text-align:start; }
+  .msg.bot a { color:var(--accent); }
+  .typing::after { content:"▍"; animation:blink 1s steps(1) infinite; color:var(--accent); }
+  @keyframes blink { 50% { opacity:0 } }
+  .meta { margin-top:12px; display:flex; flex-wrap:wrap; gap:6px; font-size:12px; }
+  .chip { border:1px solid var(--line); border-radius:999px; padding:3px 10px; color:var(--muted); text-decoration:none; background:#fff; max-width:260px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .chip:hover { border-color:var(--accent); color:var(--accent); }
+  .chip b { color:var(--ink); font-weight:500; }
+  .listings { margin-top:12px; display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:8px; }
+  .lcard { border:1px solid var(--line); border-radius:10px; padding:9px 11px; text-decoration:none; color:inherit; font-size:13px; background:#fcfbf9; }
+  .lcard:hover { border-color:var(--accent); }
+  .lcard .p { font-weight:600; } .lcard .s { color:var(--muted); font-size:12px; }
+  .note { font-size:12px; color:var(--muted); margin-top:8px; }
+  .welcome { text-align:center; color:var(--muted); padding:40px 0 10px; }
+  .welcome h2 { color:var(--ink); font-weight:600; font-size:22px; margin:0 0 6px; }
+  .suggest { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-top:18px; }
+  .suggest button { border:1px solid var(--line); background:var(--card); border-radius:999px; padding:7px 13px; font:inherit; font-size:13.5px; cursor:pointer; color:var(--ink); }
+  .suggest button:hover { border-color:var(--accent); background:var(--accent-soft); }
+  form { display:flex; gap:8px; padding:12px 0 8px; border-top:1px solid var(--line); }
+  textarea { flex:1; resize:none; border:1px solid var(--line); border-radius:12px; padding:11px 13px; font:inherit; background:#fff; max-height:140px; }
+  textarea:focus { outline:2px solid var(--accent-soft); border-color:var(--accent); }
+  button.send { border:0; background:var(--ink); color:#fff; border-radius:12px; padding:0 18px; font:inherit; font-weight:500; cursor:pointer; }
+  button.send:disabled { opacity:.4; cursor:default; }
+  footer { font-size:11.5px; color:var(--muted); padding:0 0 14px; text-align:center; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div>
+      <h1>Property Assistant</h1>
+      <p id="sub">Answers from public DarGlobal &amp; Wasalt data</p>
+    </div>
+    <div class="status"><span class="dot" id="dot"></span><span id="stat">connecting…</span></div>
+  </header>
+  <div id="log">
+    <div class="welcome" id="welcome">
+      <h2>Ask about DarGlobal projects or Saudi listings</h2>
+      <div>Every answer cites its sources</div>
+      <div class="suggest" id="suggest"></div>
+    </div>
+  </div>
+  <form id="f">
+    <textarea id="q" rows="1" placeholder="e.g. Which DarGlobal projects are in Spain?" maxlength="1000"></textarea>
+    <button class="send" id="send">Send</button>
+  </form>
+  <footer>Demo by Muhammad Qaim Ali for a Junior AI Engineer assessment. Not affiliated with DarGlobal or Wasalt. Prices are asking prices from a dated snapshot and may have changed.</footer>
+</div>
+<script>
+const log = document.getElementById('log'), q = document.getElementById('q'), sendBtn = document.getElementById('send');
+let history = [], busy = false;
+const fmt = n => n == null ? '—' : Number(n).toLocaleString('en-US', {maximumFractionDigits: 0});
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const md = s => (window.marked && window.DOMPurify)
+  ? DOMPurify.sanitize(marked.parse(s || ''), {ADD_ATTR: ['target']})
+  : esc(s).replace(/\n/g, '<br>');  // CDN blocked: plain text
+
+fetch('/api/info').then(r => r.json()).then(i => {
+  document.getElementById('sub').textContent =
+    `Answers from public DarGlobal & Wasalt data · snapshot ${i.snapshot_date} · ${i.listings} listings`;
+  const dot = document.getElementById('dot'), st = document.getElementById('stat');
+  dot.className = 'dot ' + (i.llm_configured ? 'ok' : 'warn');
+  st.textContent = i.llm_configured ? (i.dense ? 'hybrid search · online' : 'keyword search · online') : 'retrieval-only mode';
+  const box = document.getElementById('suggest');
+  i.suggestions.forEach(s => {
+    const b = document.createElement('button'); b.type = 'button'; b.textContent = s;
+    b.onclick = () => ask(s); box.appendChild(b);
+  });
+}).catch(() => { document.getElementById('stat').textContent = 'offline'; });
+
+function add(cls, html) {
+  const d = document.createElement('div'); d.className = 'msg ' + cls;
+  d.innerHTML = html; log.appendChild(d); log.scrollTop = log.scrollHeight; return d;
+}
+
+function renderMeta(el, meta) {
+  let html = '';
+  if (meta.listings && meta.listings.length) {
+    html += '<div class="listings">' + meta.listings.map(l => `
+      <a class="lcard" href="${esc(l.url)}" target="_blank" rel="noopener">
+        <div class="p">${l.price ? fmt(l.price) + ' SAR' : 'Price on request'}${l.rent_period ? ' / ' + esc(l.rent_period) : ''}</div>
+        <div>${esc(l.title)}</div>
+        <div class="s">${[l.district, l.city].filter(Boolean).map(esc).join(', ')}${l.area_sqm ? ' · ' + fmt(l.area_sqm) + ' sqm' : ''}${l.bedrooms != null ? ' · ' + l.bedrooms + ' bed' : ''} · ${esc(l.n)}</div>
+      </a>`).join('') + '</div>';
+    if (meta.listing_count > meta.listings.length)
+      html += `<div class="note">Showing ${meta.listings.length} of ${fmt(meta.listing_count)} matching listings.</div>`;
+    if (meta.relaxed && meta.relaxed.length)
+      html += `<div class="note">No exact match, so these filters were relaxed: ${meta.relaxed.map(esc).join(', ')}.</div>`;
+  }
+  if (meta.sources && meta.sources.length) {
+    const groups = new Map();  // same page cited twice -> one chip "[4,5]"
+    meta.sources.forEach(s => { const k = s.url + '|' + s.title; if (!groups.has(k)) groups.set(k, {...s, ns: []}); groups.get(k).ns.push(s.n); });
+    html += '<div class="meta">' + [...groups.values()].map(s => {
+      const owner = s.source === 'darglobal' ? 'DarGlobal' : 'Wasalt';
+      const label = s.title.toLowerCase().startsWith(owner.toLowerCase()) ? s.title : owner + ' · ' + s.title;
+      return `<a class="chip" href="${esc(s.url)}" target="_blank" rel="noopener" title="${esc(s.title)}"><b>[${s.ns.join(',')}]</b> ${esc(label)}</a>`;
+    }).join('') + '</div>';
+  }
+  el.querySelector('.extra').innerHTML = html;
+}
+
+async function ask(text) {
+  text = (text || '').trim();
+  if (!text || busy) return;
+  busy = true; sendBtn.disabled = true;
+  document.getElementById('welcome')?.remove();
+  add('user', esc(text));
+  const bot = add('bot', '<div class="body typing"></div><div class="extra"></div><div class="note model"></div>');
+  const body = bot.querySelector('.body');
+  let answer = '';
+  try {
+    const res = await fetch('/api/chat', {method: 'POST', headers: {'Content-Type': 'application/json'},
+                                          body: JSON.stringify({message: text, history})});
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || ('HTTP ' + res.status));
+    }
+    const reader = res.body.getReader(), dec = new TextDecoder();
+    let buf = '';
+    while (true) {
+      const {value, done} = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, {stream: true});
+      let i;
+      while ((i = buf.indexOf('\n\n')) >= 0) {
+        const raw = buf.slice(0, i); buf = buf.slice(i + 2);
+        const ev = (raw.match(/^event: (.*)$/m) || [])[1], data = JSON.parse((raw.match(/^data: (.*)$/m) || [])[1] || '{}');
+        if (ev === 'meta') renderMeta(bot, data);
+        else if (ev === 'model') bot.querySelector('.model').textContent = 'model: ' + data.model;
+        else if (ev === 'delta') { answer += data.text; body.innerHTML = md(answer); log.scrollTop = log.scrollHeight; }
+      }
+    }
+  } catch (e) {
+    answer = answer || ('Sorry, something went wrong: ' + e.message);
+    body.innerHTML = md(answer);
+  }
+  body.classList.remove('typing');
+  body.querySelectorAll('a').forEach(a => { a.target = '_blank'; a.rel = 'noopener'; });
+  history.push({role: 'user', content: text}, {role: 'assistant', content: answer});
+  history = history.slice(-12);
+  busy = false; sendBtn.disabled = false; q.focus();
+}
+
+document.getElementById('f').onsubmit = e => { e.preventDefault(); const t = q.value; q.value = ''; q.style.height = ''; ask(t); };
+q.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); document.getElementById('f').requestSubmit(); } });
+q.addEventListener('input', () => { q.style.height = 'auto'; q.style.height = Math.min(q.scrollHeight, 140) + 'px'; });
+</script>
+</body>
+</html>

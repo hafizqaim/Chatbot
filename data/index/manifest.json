@@ -1,0 +1,44 @@
+{
+  "snapshot_date": "2026-11-19",
+  "embed_model": "BAAI/bge-small-en-v1.5",
+  "chunks": 1463,
+  "projects": {
+    "darglobal": 27,
+    "wasalt": 0
+  },
+  "articles": {
+    "darglobal": 91,
+    "wasalt": 3
+  },
+  "listings": 102,
+  "listings_with_price": 101,
+  "project_names": [
+    "Amour Sans Detour",
+    "Amour Sans Detour 2",
+    "Coastal Investment Villas",
+    "D-Villas At Jumeirah Golf Estates",
+    "DG1",
+    "Da Vinci Tower, Interiors by Pagani",
+    "Exclusive Plots",
+    "Fairway Villas",
+    "Invest in Aida",
+    "Les Vagues by Elie Saab",
+    "Marea, Interiors by Missoni",
+    "Marriott Residences Aida, Oman",
+    "Neptune, Interiors by Mouawad",
+    "Sunrise Haven",
+    "The Astera, Interiors by Aston Martin",
+    "The Great Escape",
+    "The Great Escape 2",
+    "The Mulliner",
+    "Tierra Viva, Design inspired by Automobili Lamborghini",
+    "Trump Cliff Villas",
+    "Trump Furnished Residences",
+    "Trump Golf Villas",
+    "Trump International Hotel & Tower Dubai",
+    "Trump International Hotel, Oman",
+    "Trump Tower Jeddah",
+    "Urban Oasis by Missoni",
+    "W Residences"
+  ]
+}

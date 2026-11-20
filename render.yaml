@@ -1,0 +1,16 @@
+# Render Blueprint: New > Blueprint > pick this repo. Then set OPENROUTER_API_KEY in the dashboard.
+services:
+  - type: web
+    name: darglobal-chatbot
+    runtime: docker
+    plan: free
+    region: frankfurt
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: OPENROUTER_MODELS
+        value: google/gemma-4-31b-it:free,nvidia/nemotron-3-ultra-550b-a55b:free,openrouter/free
+      - key: RATE_LIMIT_PER_MIN
+        value: "12"
